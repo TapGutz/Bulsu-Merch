@@ -2,25 +2,29 @@
 include("../db.php");
 
 error_reporting(0);
-if(isset($_GET['action']) && $_GET['action']!="" && $_GET['action']=='delete')
-{
-$order_id=$_GET['order_id'];
 
-/*this is delet query*/
-mysqli_query($con,"delete from orders where order_id='$order_id'")or die("delete query is incorrect...");
-} 
+if (isset($_GET['action']) && $_GET['action'] != "" && $_GET['action'] == 'delete') {
+    // Check if order_id is numeric and not empty
+    if (isset($_GET['order_id']) && is_numeric($_GET['order_id']) && !empty($_GET['order_id'])) {
+        $order_id = $_GET['order_id'];
+        $query = "DELETE FROM orders WHERE order_id = $order_id";
+        $result = mysqli_query($con, $query);
 
-///pagination
-// $page=$_GET['page'];
+        if ($result) {
+            echo "Order deleted successfully.";
+            // JavaScript redirection
+            echo "<script>window.location.href = 'http://localhost/shop/admin/index.php?page=orders';</script>";
+        } else {
+            echo "Error: " . mysqli_error($con);
+        }
+    } else {
+        echo "Invalid or empty order_id.";
+    }
+}
 
-// if($page=="" || $page=="1")
-// {
-// $page1=0;	
-// }
-// else
-// {
-// $page1=($page*10)-10;	
-// }
+
+
+
 
 include "sidenav.php";
 include "topheader.php";
@@ -48,74 +52,65 @@ include "topheader.php";
                             </thead>
                             <tbody>
                                 <?php 
-                        $result=mysqli_query($con,"select * from orders o inner join orders_info oi on oi.order_id= o.order_id ")or die ("query 1 incorrect.....");
+                                $result=mysqli_query($con,"select * from orders o inner join orders_info oi on oi.order_id= o.order_id ")or die ("query 1 incorrect.....");
 
-                        while($row=mysqli_fetch_array($result))
-                        {	
-                        // echo "<tr><td>$cus_name</td><td>$p_names</td><td>$email<br>$contact_no</td><td>$address<br>ZIP: $zip_code<br>$country</td><td>$details</td><td>$quantity</td><td>$time</td>
+                                while($row=mysqli_fetch_array($result))
+                                {   
+                                    echo "<tr>
+                                        <td>{$row['ref_id']}</td>
+                                        <td>
+                                            <a data-toggle='collapse' href='#prod{$row['order_id']}' role='button' aria-expanded='false' aria-controls='prod{$row['order_id']}'>Orders <span><i class='fa fa-angle-down'></i></span></a>
+                                            <div class='collapse' id='prod{$row['order_id']}'>";
 
-                        // <td>
-                        // <a class=' btn btn-danger' href='orders.php?order_id=$order_id&action=delete'>Delete</a>
-                        // </td></tr>";
-                          $prod = mysqli_query($con,"SELECT * FROM order_products op inner join products p on op.product_id = p.product_id where op.order_id = ".$row['order_id']);
-                        ?>
-                                <tr>
-                                    <td><?php echo $row['ref_id'] ?></td>
-                                    <td>
-                                        <a data-toggle="collapse" href="#prod<?php echo $row['order_id'] ?>"
-                                            role="button" aria-expanded="false"
-                                            aria-controls="prod<?php echo $row['order_id'] ?>">Orders <span><i
-                                                    class="fa fa-angle-down"></i></span></a>
-                                        <div class="collapse" id="prod<?php echo $row['order_id'] ?>">
-                                            <?php
-                            while($prow = mysqli_fetch_assoc($prod)){
-
-                             ?>
-                                            <small>
-                                                <p><b>Product:</b><?php echo $prow['product_title']  ?></p>
-                                                <p><b>Price:</b><?php echo $prow['product_price']  ?></p>
-                                                <p><b>Qty:</b><?php echo $prow['qty']  ?></p>
-                                                <p><b>Total Amount:</b><?php echo $prow['amt'] ?></p>
+                                    $prod = mysqli_query($con,"SELECT * FROM order_products op inner join products p on op.product_id = p.product_id where op.order_id = ".$row['order_id']);
+                                    while($prow = mysqli_fetch_assoc($prod)){
+                                        echo "<small>
+                                                <p><b>Product:</b>{$prow['product_title']}</p>
+                                                <p><b>Price:</b>{$prow['product_price']}</p>
+                                                <p><b>Qty:</b>{$prow['qty']}</p>
+                                                <p><b>Total Amount:</b>{$prow['amt']}</p>
                                             </small>
-                                            <hr>
-                                            <?php } ?>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <p><b>Name :</b><?php echo ucwords($row['f_name']) ?></p>
-                                        <p><b>Address :</b><?php echo $row['address'] ?></p>
-                                        <p><b>Email :</b><?php echo $row['email'] ?></p>
-                                        <p><b>Contact # :</b><?php echo $row['contact_no'] ?></p>
-                                    </td>
-                                    <td>
-                                        <?php if($row['status'] == 0): ?>
-                                        <div class="badge badge-danger">Cancelled</div>
-                                        <?php elseif($row['status'] == 1): ?>
-                                        <div class="badge badge-info">Pending</div>
-                                        <?php elseif($row['status'] == 2): ?>
-                                        <div class="badge badge-warning">Shipped</div>
-                                        <?php elseif($row['status'] == 3): ?>
-                                        <div class="badge badge-success">Delivered</div>
-                                        <?php endif; ?>
+                                            <hr>";
+                                    }
+                                    echo "</div>
+                                        </td>
+                                        <td>
+                                            <p><b>Name :</b>".ucwords($row['f_name'])."</p>
+                                            <p><b>Address :</b>{$row['address']}</p>
+                                            <p><b>Email :</b>{$row['email']}</p>
+                                            <p><b>Contact # :</b>{$row['contact_no']}</p>
+                                        </td>
+                                        <td>";
 
-                                    </td>
-                                    <td>
+                                    if($row['status'] == 0){
+                                        echo "<div class='badge badge-danger'>Cancelled</div>";
+                                    } elseif($row['status'] == 1) {
+                                        echo "<div class='badge badge-info'>Pending</div>";
+                                    } elseif($row['status'] == 2) {
+                                        echo "<div class='badge badge-warning'>Shipped</div>";
+                                    } elseif($row['status'] == 3) {
+                                        echo "<div class='badge badge-success'>Delivered</div>";
+                                    }
+                                    
 
-                                        <?php if($row['status'] == 1): ?>
-                                        <button class="btn btn-sm btn-primary changestatus" data-stat='2'
-                                            data-id="<?php echo $row['order_id'] ?>">Mark as Shipped</button>
-                                        <?php elseif($row['status'] == 2): ?>
-                                        <button class="btn btn-sm btn-primary changestatus" data-stat='3'
-                                            data-id="<?php echo $row['order_id'] ?>">Mark as Delivered</button>
-                                        <?php elseif($row['status'] == 3): ?>
-                                        <div class="badge badge-success" data-id="<?php echo $row['order_id'] ?>"
-                                            disabled>Delivered</div>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                                <?php
-                        }
-                        ?>
+                                    
+
+                                    if($row['status'] == 1) {
+                                        echo "<button class='btn btn-sm btn-primary changestatus' data-stat='2' data-id='{$row['order_id']}'>Mark as Shipped</button>";
+                                    } elseif($row['status'] == 2) {
+                                        echo "<button class='btn btn-sm btn-primary changestatus' data-stat='3' data-id='{$row['order_id']}'>Mark as Delivered</button>";
+                                    } elseif($row['status'] == 3) {
+                                        echo "<div class='badge badge-success' data-id='{$row['order_id']}' disabled>Delivered</div>";
+                                    }
+
+                                    echo "</td>
+                                        <td>
+                                            <a class='btn btn-danger' href='orders.php?action=delete&order_id={$row['order_id']}'>Delete</a>";
+
+                                    echo "</td>
+                                        </tr>";
+                                }
+                                ?>
                             </tbody>
                         </table>
 
@@ -129,13 +124,11 @@ include "topheader.php";
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 <script>
-// $('#ordertbl').dataTable()
 $('.changestatus').click(function() {
-    var conf = confirm("Are you sure change the status of this order?");
+    var conf = confirm("Are you sure you want to change the status of this order?");
     if (conf == true) {
         start_load()
         $.ajax({

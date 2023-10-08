@@ -10,7 +10,7 @@ session_start();
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Online Shop</title>
+    <title>Bulsu Merch</title>
     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,500,700" rel="stylesheet">
     <link type="text/css" rel="stylesheet" href="css/bootstrap.min.css" />
     <link type="text/css" rel="stylesheet" href="css/slick.css" />
@@ -110,7 +110,7 @@ session_start();
                             <a href="#" class="logo">
                                 <br>
                                 <h3 style="color: black;">
-                                    Online Shop
+                                    Bulsu Merch
                                 </h3>
 
                             </a>
